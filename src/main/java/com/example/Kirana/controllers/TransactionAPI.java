@@ -3,7 +3,7 @@ package com.example.Kirana.controllers;
 
 import com.example.Kirana.constants.APIRateLimiting;
 import com.example.Kirana.models.TransactionDetails;
-import com.example.Kirana.services.AuthorisationDetails;
+import com.example.Kirana.utils.AuthorisationDetails;
 import com.example.Kirana.services.RateLimiter;
 import com.example.Kirana.services.TransactionService;
 import com.example.Kirana.utils.CurrencyConversion;

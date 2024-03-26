@@ -1,4 +1,4 @@
-package com.example.Kirana.services;
+package com.example.Kirana.utils;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
