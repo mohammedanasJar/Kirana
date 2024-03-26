@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
+import java.util.List;
 
 @RestController
 @RequestMapping("/record")
 public class ReportAPI {
     private final Bucket bucket;
-
     @Autowired
     ReportService rs;
 
@@ -26,19 +26,18 @@ public class ReportAPI {
         Bandwidth limit=Bandwidth.classic(10, Refill.greedy(10, Duration.ofMinutes(1)));
         this.bucket = Bucket.builder()
                 .addLimit(limit)
-                .build();    }
+                .build();
+    }
 
     @GetMapping("/{period}")
-    public ResponseEntity<Object> Report(@PathVariable String period){
+    public ResponseEntity Report(@PathVariable String period){
         if(bucket.tryConsume(1)) {
             switch (period) {
                 case "week":
                     return ResponseEntity.ok(rs.getWeekReport());
                 case "month":
-                    System.out.println("Calling report");
                     return ResponseEntity.ok(rs.getMonthReport());
                 case "year":
-                    System.out.println("Calling report");
                     return ResponseEntity.ok(rs.getYearReport());
                 default :
                     return ResponseEntity.notFound().build();

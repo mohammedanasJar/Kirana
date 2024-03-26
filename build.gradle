@@ -22,12 +22,16 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 // https://mvnrepository.com/artifact/com.bucket4j/bucket4j-core
-	implementation 'com.bucket4j:bucket4j-core:8.10.1'
+//	implementation 'com.bucket4j:bucket4j-core:8.10.1'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	implementation 'org.projectlombok:lombok:1.18.22'
 	implementation 'es.moki.ratelimitj:ratelimitj-redis:0.7.0'
 	// https://mvnrepository.com/artifact/org.aspectj/aspectjtools
 	implementation 'org.aspectj:aspectjtools:1.9.22'
+// https://mvnrepository.com/artifact/org.redisson/redisson-spring-boot-starter
+	implementation 'org.redisson:redisson-spring-boot-starter:3.17.0'
+// https://mvnrepository.com/artifact/com.giffing.bucket4j.spring.boot.starter/bucket4j-spring-boot-starter
+	implementation 'com.giffing.bucket4j.spring.boot.starter:bucket4j-spring-boot-starter:0.5.2'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'

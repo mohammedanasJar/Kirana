@@ -46,7 +46,7 @@ this.netFlow=Amount;
         else {
             currencyAmountMap.put(currency,Amount);
         }
-        typeAmountMap.put(Type,typeAmountMap.get(Type)+Amount);
+            typeAmountMap.put(Type,typeAmountMap.get(Type)+Amount);
         this.netFlow = this.typeAmountMap.get("Creds")-this.typeAmountMap.get("Debs");
 
     }
