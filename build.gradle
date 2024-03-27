@@ -1,42 +1,43 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.0.13'
-	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+    id 'java'
+    id 'org.springframework.boot' version '3.0.13'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
 }
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	sourceCompatibility = '17'
+    sourceCompatibility = '17'
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-// https://mvnrepository.com/artifact/com.bucket4j/bucket4j-core
-//	implementation 'com.bucket4j:bucket4j-core:8.10.1'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	implementation 'org.projectlombok:lombok:1.18.22'
-	implementation 'es.moki.ratelimitj:ratelimitj-redis:0.7.0'
-	// https://mvnrepository.com/artifact/org.aspectj/aspectjtools
-	implementation 'org.aspectj:aspectjtools:1.9.22'
-// https://mvnrepository.com/artifact/org.redisson/redisson-spring-boot-starter
-	implementation 'org.redisson:redisson-spring-boot-starter:3.17.0'
-// https://mvnrepository.com/artifact/com.giffing.bucket4j.spring.boot.starter/bucket4j-spring-boot-starter
-	implementation 'com.giffing.bucket4j.spring.boot.starter:bucket4j-spring-boot-starter:0.5.2'
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+//    implementation 'org.redisson:redisson-spring-boot-starter:3.17.0'
+    implementation 'org.projectlombok:lombok:1.18.22'
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    implementation 'org.apache.logging.log4j:log4j-api:2.23.1'
+    implementation 'org.apache.logging.log4j:log4j-core:2.23.1'
+
+    implementation 'es.moki.ratelimitj:ratelimitj-redis:0.7.0'
+    implementation 'org.aspectj:aspectjtools:1.9.22'
+    implementation 'com.giffing.bucket4j.spring.boot.starter:bucket4j-spring-boot-starter:0.5.2'
+    implementation 'org.springframework.boot:spring-boot-devtools:3.2.4'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }

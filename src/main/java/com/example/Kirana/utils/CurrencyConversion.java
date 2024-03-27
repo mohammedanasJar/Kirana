@@ -1,33 +1,27 @@
 package com.example.Kirana.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.Kirana.constants.ExchangeRates;
-import org.apache.tomcat.util.json.JSONParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.HashMap;
 
 @Component
 public class CurrencyConversion {
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
     HashMap mapping;
-     @Cacheable(value = "currencyRates", key = "'rates'")
-     public String fetchRates()
-     {
+
+    @Cacheable(value = "currencyRates", key = "'rates'")
+    public String fetchRates() {
         System.out.println("Fetching rates...");
         try {
             String cachedData = redisTemplate.opsForValue().get("rates");
@@ -48,8 +42,6 @@ public class CurrencyConversion {
                     response.append(inputLine);
                 }
                 in.close();
-
-                // Log that data is retrieved from the API
                 System.out.println("Data retrieved from API.");
 
                 // Store the data in the cache
@@ -65,16 +57,16 @@ public class CurrencyConversion {
             throw new RuntimeException(e);
         }
     }
-    public double conversion(String currency,double amount)  {
-         String cc=this.fetchRates();
-try {
-    mapping = new ObjectMapper().readValue(cc, HashMap.class);
 
-}
-catch (Exception e){
-System.out.println("Error parsing");
-}
-        HashMap map= (HashMap) mapping.get("rates");
-        return amount/(double)map.get(currency);
+    public double conversion(String currency, double amount) {
+        String cc = this.fetchRates();
+        try {
+            mapping = new ObjectMapper().readValue(cc, HashMap.class);
+
+        } catch (Exception e) {
+            System.out.println("Error parsing");
+        }
+        HashMap map = (HashMap) mapping.get("rates");
+        return amount / (double) map.get(currency);
     }
 }

@@ -16,7 +16,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/transactions")
 public class TransactionAPI {
-    AuthorisationDetails ad=new AuthorisationDetails();
+    AuthorisationDetails ad = new AuthorisationDetails();
+
     @Autowired
     RateLimiter rateLimiter;
     @Autowired
@@ -24,42 +25,41 @@ public class TransactionAPI {
 
     @Autowired
     CurrencyConversion cc;
+
     @PostMapping("/record")
-    public  ResponseEntity<Object> setTransact(@RequestBody TransactionDetails tt){
-        String username=ad.getUsernameFromAuthorizationHeader();
-        if(APIRateLimiting.transactionBucket.containsKey(username)){
-            Bucket mybucket=APIRateLimiting.transactionBucket.get(username);
+    public ResponseEntity<Object> setTransact(@RequestBody TransactionDetails tt) {
+        String username = ad.getUsernameFromAuthorizationHeader();
+        if (APIRateLimiting.transactionBucket.containsKey(username)) {
+            Bucket mybucket = APIRateLimiting.transactionBucket.get(username);
             if (mybucket.tryConsume(1)) {
-                if(!tt.getCurrencyUsed().equals("USD")){
-                    tt.setTransactionAmount(cc.conversion(tt.getCurrencyUsed(),tt.getTransactionAmount()));
+                if (!tt.getCurrencyUsed().equals("USD")) {
+                    tt.setTransactionAmount(cc.conversion(tt.getCurrencyUsed(), tt.getTransactionAmount()));
                 }
                 ts.setTransaction(tt);
-                return ResponseEntity.ok("Transaction Recorded Successfully\n"+tt.toString());
+                return ResponseEntity.ok("Transaction Recorded Successfully\n" + tt.toString());
             } else {
-                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("API Limit Exceeded. Try Again after a minute");
             }
-        }
-        else{
-            APIRateLimiting.transactionBucket.put(username,rateLimiter.resolveBucket(username));
+        } else {
+            APIRateLimiting.transactionBucket.put(username, rateLimiter.resolveBucket(username));
             return this.setTransact(tt);
         }
     }
 
 
     @GetMapping("/getrate")
-    public ResponseEntity<Object> getconversion(){
-        String username=ad.getUsernameFromAuthorizationHeader();
-        if(APIRateLimiting.ratesBucket.containsKey(username)){
-            Bucket mybucket=APIRateLimiting.ratesBucket.get(username);
+    public ResponseEntity<Object> getconversion() {
+        String username = ad.getUsernameFromAuthorizationHeader();
+        if (APIRateLimiting.ratesBucket.containsKey(username)) {
+            Bucket mybucket = APIRateLimiting.ratesBucket.get(username);
             if (mybucket.tryConsume(1)) {
                 return ResponseEntity.ok(cc.fetchRates());
             } else {
-                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("API Limit Exceeded. Try Again after a minute");
             }
-        }
-        else{
-            APIRateLimiting.ratesBucket.put(username,rateLimiter.resolveBucket(username));
+        } else {
+            APIRateLimiting.ratesBucket.put(username, rateLimiter.resolveBucket(username));
             return getconversion();
         }
-       }
+    }
 }

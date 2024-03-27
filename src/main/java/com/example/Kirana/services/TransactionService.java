@@ -6,10 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class TransactionService{
+public class TransactionService {
     @Autowired
     TransactionRepo tr;
-    public void setTransaction(TransactionDetails t){
+
+    public void setTransaction(TransactionDetails t) {
         System.out.println(t.toString());
         tr.save(t);
     }

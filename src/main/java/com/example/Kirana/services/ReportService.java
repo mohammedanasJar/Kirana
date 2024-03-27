@@ -20,59 +20,58 @@ public class ReportService {
     @Autowired
     TransactionRepo tr;
 
-    public String getMonthReport(){
-        List<TransactionDetails> td=tr.findAll();
+    public String getMonthReport() {
+        List<TransactionDetails> td = tr.findAll();
         int weekNum;
-        Map<Integer, MyReport> wrManager=new HashMap<>();
+        Map<Integer, MyReport> wrManager = new HashMap<>();
         MyReport wr;
-        for(TransactionDetails t:td){
-            weekNum=getDateFromObjectId(t.getId()).getMonthValue();
-            if(wrManager.containsKey(weekNum)){
-                wr=wrManager.get(weekNum);
-                wr.mergeData(t.getCurrencyUsed(),t.getTransactionAmount(), t.getTransactionType());
-            }
-            else{
-                wrManager.put(weekNum,new MyReport(weekNum,t.getCurrencyUsed(),t.getTransactionAmount(), t.getTransactionType()));
+        for (TransactionDetails t : td) {
+            weekNum = getDateFromObjectId(t.getId()).getMonthValue();
+            if (wrManager.containsKey(weekNum)) {
+                wr = wrManager.get(weekNum);
+                wr.mergeData(t.getCurrencyUsed(), t.getTransactionAmount(), t.getTransactionType());
+            } else {
+                wrManager.put(weekNum, new MyReport(weekNum, t.getCurrencyUsed(), t.getTransactionAmount(), t.getTransactionType()));
             }
         }
         return wrManager.toString();
 
     }
-    public String getWeekReport(){
-        List<TransactionDetails> td=tr.findAll();
+
+    public String getWeekReport() {
+        List<TransactionDetails> td = tr.findAll();
         int weekNum;
-        Map<Integer, MyReport> wrManager=new HashMap<>();
+        Map<Integer, MyReport> wrManager = new HashMap<>();
         MyReport wr;
-        for(TransactionDetails t:td){
-            weekNum=getDateFromObjectId(t.getId()).get(WeekFields.ISO.weekOfWeekBasedYear());
-            if(wrManager.containsKey(weekNum)){
-                wr=wrManager.get(weekNum);
-                wr.mergeData(t.getCurrencyUsed(),t.getTransactionAmount(), t.getTransactionType());
-            }
-            else{
-                wrManager.put(weekNum,new MyReport(weekNum,t.getCurrencyUsed(),t.getTransactionAmount(), t.getTransactionType()));
+        for (TransactionDetails t : td) {
+            weekNum = getDateFromObjectId(t.getId()).get(WeekFields.ISO.weekOfWeekBasedYear());
+            if (wrManager.containsKey(weekNum)) {
+                wr = wrManager.get(weekNum);
+                wr.mergeData(t.getCurrencyUsed(), t.getTransactionAmount(), t.getTransactionType());
+            } else {
+                wrManager.put(weekNum, new MyReport(weekNum, t.getCurrencyUsed(), t.getTransactionAmount(), t.getTransactionType()));
             }
         }
         return wrManager.toString();
     }
 
-    public String getYearReport(){
-        List<TransactionDetails> td=tr.findAll();
+    public String getYearReport() {
+        List<TransactionDetails> td = tr.findAll();
         int weekNum;
-        Map<Integer, MyReport> wrManager=new HashMap<>();
+        Map<Integer, MyReport> wrManager = new HashMap<>();
         MyReport wr;
-        for(TransactionDetails t:td){
-            weekNum=getDateFromObjectId(t.getId()).getYear();
-            if(wrManager.containsKey(weekNum)){
-                wr=wrManager.get(weekNum);
-                wr.mergeData(t.getCurrencyUsed(),t.getTransactionAmount(), t.getTransactionType());
-            }
-            else{
-                wrManager.put(weekNum,new MyReport(weekNum,t.getCurrencyUsed(),t.getTransactionAmount(), t.getTransactionType()));
+        for (TransactionDetails t : td) {
+            weekNum = getDateFromObjectId(t.getId()).getYear();
+            if (wrManager.containsKey(weekNum)) {
+                wr = wrManager.get(weekNum);
+                wr.mergeData(t.getCurrencyUsed(), t.getTransactionAmount(), t.getTransactionType());
+            } else {
+                wrManager.put(weekNum, new MyReport(weekNum, t.getCurrencyUsed(), t.getTransactionAmount(), t.getTransactionType()));
             }
         }
         return wrManager.toString();
     }
+
     public static LocalDate getDateFromObjectId(String objectIdString) {
         ObjectId objectId = new ObjectId(objectIdString);
 

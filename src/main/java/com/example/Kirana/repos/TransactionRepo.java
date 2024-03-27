@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.repository.Query;
 
 import java.util.List;
 
-public interface TransactionRepo extends MongoRepository<TransactionDetails,String> {
+public interface TransactionRepo extends MongoRepository<TransactionDetails, String> {
     @Query("{$expr:{$and:[{$eq:[{$year:'$_id'}, ?0]}, {$eq:[{$month:'$_id'}, ?1]}]}}")
     List<TransactionDetails> findByMonthQuery(int year, int month);
 
