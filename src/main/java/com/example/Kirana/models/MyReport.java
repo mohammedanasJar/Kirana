@@ -1,18 +1,20 @@
 package com.example.Kirana.models;
 
+import lombok.Data;
+
 import java.util.HashMap;
 import java.util.Map;
 
+@Data
 public class MyReport {
     @Override
     public String toString() {
-        return "Myeport{" +
+        return "{" +
                 "netFlow=" + netFlow +
-                ", number=" + number +
                 ", totalTransaction=" + totalTransaction +
                 ", currencyAmountMap=" + currencyAmountMap +
                 ", typeAmountMap=" + typeAmountMap +
-                '}';
+                "}\n";
     }
 
     private double netFlow;

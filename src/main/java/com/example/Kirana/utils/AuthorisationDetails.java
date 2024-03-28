@@ -2,7 +2,9 @@ package com.example.Kirana.utils;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 
+@Component
 public class AuthorisationDetails {
 
     public String getUsernameFromAuthorizationHeader() {

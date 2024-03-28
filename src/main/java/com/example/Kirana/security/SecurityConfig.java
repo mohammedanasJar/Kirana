@@ -32,8 +32,8 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers(HttpMethod.GET, "/transactions/**").hasAnyAuthority("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/transactions/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/transaction/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/transaction/**").hasAuthority("ADMIN")
                         .requestMatchers("/record/**").hasAnyAuthority("ADMIN", "USER")
                         .anyRequest().authenticated()
                 )

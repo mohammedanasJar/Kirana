@@ -1,6 +1,6 @@
 package com.example.Kirana.controllers;
 
-import com.example.Kirana.constants.APIRateLimiting;
+import com.example.Kirana.constants.RateLimitingBucketStorage;
 import com.example.Kirana.services.RateLimiter;
 import com.example.Kirana.services.ReportService;
 import com.example.Kirana.utils.AuthorisationDetails;
@@ -30,16 +30,16 @@ public class ReportAPI {
     public ResponseEntity Report(@PathVariable String period) {
         logger.info("Calling " + period + "'s ReportingAPI");
         String username = ad.getUsernameFromAuthorizationHeader();
-        if (APIRateLimiting.reportBucket.containsKey(username)) {
-            Bucket mybucket = APIRateLimiting.reportBucket.get(username);
+        if (RateLimitingBucketStorage.reportBucket.containsKey(username)) {
+            Bucket mybucket = RateLimitingBucketStorage.reportBucket.get(username);
             if (mybucket.tryConsume(1)) {
                 switch (period) {
                     case "week":
-                        return ResponseEntity.ok(rs.getWeekReport());
+                        return ResponseEntity.ok(rs.getWeekReport().getBody());
                     case "month":
-                        return ResponseEntity.ok(rs.getMonthReport());
+                        return ResponseEntity.ok(rs.getMonthReport().getBody());
                     case "year":
-                        return ResponseEntity.ok(rs.getYearReport());
+                        return ResponseEntity.ok(rs.getYearReport().getBody());
                     default:
                         return ResponseEntity.notFound().build();
                 }
@@ -49,7 +49,7 @@ public class ReportAPI {
             }
         } else {
             logger.info("Creating a new Bucket for " + username);
-            APIRateLimiting.reportBucket.put(username, rateLimiter.resolveBucket(username));
+            RateLimitingBucketStorage.reportBucket.put(username, rateLimiter.resolveBucket(username));
             return this.Report(period);
         }
     }
