@@ -1,13 +1,16 @@
 package com.example.Kirana.controllers;
 
 import com.example.Kirana.constants.RateLimitingBucketStorage;
+import com.example.Kirana.repos.TransactionRepo;
 import com.example.Kirana.services.RateLimiter;
 import com.example.Kirana.services.ReportService;
 import com.example.Kirana.utils.AuthorisationDetails;
 import io.github.bucket4j.Bucket;
+import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,16 +18,26 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/record")
 public class ReportAPI {
     private static final Logger logger = LoggerFactory.getLogger(ReportAPI.class);
-
+    @Autowired
+    TransactionRepo tr;
     @Autowired
     RateLimiter rateLimiter;
     AuthorisationDetails ad = new AuthorisationDetails();
     @Autowired
     ReportService rs;
+
+    @GetMapping
+    public ResponseEntity<List<Document>> test() {
+        AggregationResults<Document> aggregationResults = tr.debitYearWise();
+        List<Document> documents = aggregationResults.getMappedResults();
+        return ResponseEntity.ok(documents);
+    }
 
     @GetMapping("/{period}")
     public ResponseEntity Report(@PathVariable String period) {

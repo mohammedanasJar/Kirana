@@ -25,10 +25,6 @@ public class CurrencyConversion {
         System.out.println("Fetching rates...");
         try {
             String cachedData = redisTemplate.opsForValue().get("rates");
-            System.out.println(cachedData == null);
-            System.out.println(System.currentTimeMillis()-ExchangeRates.LAST_CACHE_TIME+" "+ExchangeRates.CACHE_EXPIRATION_TIME);
-
-            System.out.println(System.currentTimeMillis()-ExchangeRates.LAST_CACHE_TIME<ExchangeRates.CACHE_EXPIRATION_TIME);
             if (!(cachedData == null || System.currentTimeMillis()-ExchangeRates.LAST_CACHE_TIME>=ExchangeRates.CACHE_EXPIRATION_TIME )) {
                 System.out.println("Data retrieved from cache.");
                 return cachedData;

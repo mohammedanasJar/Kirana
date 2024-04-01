@@ -1,7 +1,9 @@
 package com.example.Kirana.repos;
 
 import com.example.Kirana.models.TransactionDetails;
+import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
@@ -17,5 +19,11 @@ public interface TransactionRepo extends MongoRepository<TransactionDetails, Obj
     @Query("{$expr:{$eq:[{$year:'$_id'}, ?0]}}")
     List<TransactionDetails> findByYearQuery(int year, int month);
 
-
+    @Query(value = "["
+            + "{'$match': {'transactionType': 'Debs'}},"
+            + "{'$project': {'year': {'$year': '$transactionDate'}, 'transactionAmount': 1}},"
+            + "{'$group': {'_id': '$year', 'totalDebsAmount': {'$sum': '$transactionAmount'}}},"
+            + "{'$project': {'year': '$_id', 'totalDebsAmount': 1, '_id': 0}}"
+            + "]")
+    AggregationResults<Document> debitYearWise();
 }

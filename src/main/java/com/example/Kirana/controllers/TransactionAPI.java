@@ -4,12 +4,14 @@ import com.example.Kirana.models.TransactionDetails;
 import com.example.Kirana.services.CurrencyConversionFetchJSONService;
 import com.example.Kirana.services.GenerateRandomTransactionService;
 import com.example.Kirana.services.TransactionService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/transaction")
+@RequiredArgsConstructor
 public class TransactionAPI {
 
     @Autowired
@@ -19,6 +21,7 @@ public class TransactionAPI {
 
     @Autowired
     GenerateRandomTransactionService grts;
+
 
     @PostMapping("/record")
     public ResponseEntity<Object> endpointToRecordSingleTransaction(@RequestBody TransactionDetails tt) {
@@ -31,8 +34,8 @@ public class TransactionAPI {
     }
 
     @GetMapping("/generateData")
-    public ResponseEntity<Object> setupRandomTransactionData(){
-     return grts.generateTransaction();
+    public ResponseEntity setupRandomTransactionData(){
+        return grts.generateTransaction();
     }
 
 }
