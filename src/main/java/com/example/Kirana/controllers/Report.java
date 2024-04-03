@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/record")
-public class ReportAPI {
-    private static final Logger logger = LoggerFactory.getLogger(ReportAPI.class);
+public class Report {
+    private static final Logger logger = LoggerFactory.getLogger(Report.class);
 
     @Autowired
     RateLimiter rateLimiter;
