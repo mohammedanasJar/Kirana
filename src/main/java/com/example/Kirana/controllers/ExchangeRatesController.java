@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class ExchangeRatesController {
     @Autowired
     ExchangeRateService ccs;
+
     /**
      * Retrieve Foreign Currency Exchange Rates
      *
      * @return JSON String
-     *
      */
     @GetMapping
     public ResponseEntity<Object> endpointToFetchCurrencyConversionJSON() {

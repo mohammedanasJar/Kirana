@@ -27,14 +27,14 @@ public class TransactionService {
      *
      * @param newTransactionRecord
      * @return The result of recording the transaction.
-      *         <ul>
-      *             <li>{@code OK with recorded Transaction}, if the transaction was successfully recorded.</li>
-      *             <li>{@code TOO_MANY_REQUESTS}, if the transaction recording failed.</li>
-      *         </ul>
+     * <ul>
+     *     <li>{@code OK with recorded Transaction}, if the transaction was successfully recorded.</li>
+     *     <li>{@code TOO_MANY_REQUESTS}, if the transaction recording failed.</li>
+     * </ul>
      */
     public ResponseEntity<Object> RecordSingleTransaction(TransactionDetails newTransactionRecord) {
         String currentUser = currentUserDetails.getUsernameFromAuthorizationHeader();
-        if(UserLimitExceeded(currentUser)){
+        if (UserLimitExceeded(currentUser)) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("API Limit Exceeded. Try Again after a minute");
         }
         CommitToMongo(newTransactionRecord);
@@ -59,13 +59,13 @@ public class TransactionService {
      *
      * @param userBucket
      * @return User specific Token Bucket
-     *<ul>
-     *<li>{@code IF USER ALREADY ACCESSED IT BEFORE}, Retrieve User Token Bucket </li>
-     *<li>{@code IF USER ACCESSING FOR FIRST TIME}, Generate User Token Bucket</li>
-     *</ul>
+     * <ul>
+     * <li>{@code IF USER ALREADY ACCESSED IT BEFORE}, Retrieve User Token Bucket </li>
+     * <li>{@code IF USER ACCESSING FOR FIRST TIME}, Generate User Token Bucket</li>
+     * </ul>
      */
-    public Bucket GetTokenBucket(String userBucket){
-        if(RateLimitingBucketStorage.transactionEndpointBucket.containsKey(userBucket)){
+    public Bucket GetTokenBucket(String userBucket) {
+        if (RateLimitingBucketStorage.transactionEndpointBucket.containsKey(userBucket)) {
             return RateLimitingBucketStorage.transactionEndpointBucket.get(userBucket);
         }
         return GenerateTokenBucket(userBucket);
@@ -77,22 +77,22 @@ public class TransactionService {
      * @param userBucket
      * @return User specific Token Bucket
      */
-    public Bucket GenerateTokenBucket(String userBucket){
+    public Bucket GenerateTokenBucket(String userBucket) {
         RateLimitingBucketStorage.transactionEndpointBucket.put(userBucket, rateLimiter.resolveBucket(userBucket));
         return GetTokenBucket(userBucket);
     }
+
     /**
      * Check if User API Limit Exceeded
      *
      * @param username
-     * @return
-     * <ul>
+     * @return <ul>
      *     <li>{@code true}, if limit exceeded</li>
      *     <li>{@code false}, if limit not exceeded</li>
      * </ul>
      */
-    public Boolean UserLimitExceeded (String username){
-        Bucket UserBucket= GetTokenBucket(username);
+    public Boolean UserLimitExceeded(String username) {
+        Bucket UserBucket = GetTokenBucket(username);
         return !UserBucket.tryConsume(1);
     }
 

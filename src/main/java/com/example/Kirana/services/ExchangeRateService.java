@@ -19,24 +19,25 @@ public class ExchangeRateService {
 
     @Autowired
     CurrencyConversion cc;
+
     public ResponseEntity<Object> fetchCurrencyConversionJSON() {
         String currentUser = currentUserDetails.getUsernameFromAuthorizationHeader();
-        if(UserLimitExceeded(currentUser)){
+        if (UserLimitExceeded(currentUser)) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("API Limit Exceeded. Try Again after a minute");
         }
         return ResponseEntity.ok(cc.fetchRates());
     }
 
-    public Bucket GetUserTokenBucketElseCreate(String currentUserBucketUsername){
-        if(RateLimitingBucketStorage.ratesBucket.containsKey(currentUserBucketUsername)){
+    public Bucket GetUserTokenBucketElseCreate(String currentUserBucketUsername) {
+        if (RateLimitingBucketStorage.ratesBucket.containsKey(currentUserBucketUsername)) {
             return RateLimitingBucketStorage.ratesBucket.get(currentUserBucketUsername);
         }
         RateLimitingBucketStorage.ratesBucket.put(currentUserBucketUsername, rateLimiter.resolveBucket(currentUserBucketUsername));
         return GetUserTokenBucketElseCreate(currentUserBucketUsername);
     }
 
-    public Boolean UserLimitExceeded (String currentUsername){
-        Bucket UserBucket=GetUserTokenBucketElseCreate(currentUsername);
+    public Boolean UserLimitExceeded(String currentUsername) {
+        Bucket UserBucket = GetUserTokenBucketElseCreate(currentUsername);
         return !UserBucket.tryConsume(1);
     }
 

@@ -18,28 +18,26 @@ public class TransactionController {
     TransactionService transactionService;
     @Autowired
     GenerateRandomTransactionService generateRandomTransactionService;
-    
+
     /**
      * Record a Single Transaction
      *
      * @param transactionDetails
      * @return Success or Error Message of recording the transaction
-     *
      */
     @PostMapping
     public ResponseEntity<Object> transaction(@RequestBody TransactionDetails transactionDetails) {
         return transactionService.RecordSingleTransaction(transactionDetails);
     }
-    
+
     /**
      * Generate Random Transaction Data
      *
      * @return Success/Failure of recording data
-     *
      */
     @PostMapping("/generate")
-    public ResponseEntity<Object> setupRandomTransactionData(){
-     return generateRandomTransactionService.generateTransaction();
+    public ResponseEntity<Object> setupRandomTransactionData() {
+        return generateRandomTransactionService.generateTransaction();
     }
 
 }
