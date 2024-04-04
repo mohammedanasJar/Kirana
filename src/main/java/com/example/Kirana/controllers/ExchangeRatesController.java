@@ -20,6 +20,6 @@ public class ExchangeRatesController {
      */
     @GetMapping
     public ResponseEntity<Object> endpointToFetchCurrencyConversionJSON() {
-        return ccs.fetchCurrencyConversionJSON();
+        return ccs.fetchExchangeRateJSON();
     }
 }

@@ -3,6 +3,7 @@ package com.example.Kirana.controllers;
 import com.example.Kirana.models.TransactionDetails;
 import com.example.Kirana.services.GenerateRandomTransactionService;
 import com.example.Kirana.services.TransactionService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,10 +25,11 @@ public class TransactionController {
      *
      * @param transactionDetails
      * @return Success or Error Message of recording the transaction
+     * @throws JsonProcessingException
      */
     @PostMapping
-    public ResponseEntity<Object> transaction(@RequestBody TransactionDetails transactionDetails) {
-        return transactionService.RecordSingleTransaction(transactionDetails);
+    public ResponseEntity<Object> transaction(@RequestBody TransactionDetails transactionDetails) throws JsonProcessingException {
+        return transactionService.recordSingleTransaction(transactionDetails);
     }
 
     /**

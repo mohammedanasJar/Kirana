@@ -4,23 +4,28 @@ import com.example.Kirana.constants.RateLimitingBucketStorage;
 import com.example.Kirana.models.TransactionDetails;
 import com.example.Kirana.repos.TransactionRepo;
 import com.example.Kirana.utils.AuthorisationDetails;
-import com.example.Kirana.utils.CurrencyConversion;
-import io.github.bucket4j.Bucket;
+import com.example.Kirana.utils.ExchangeRates;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+
 @Service
 public class TransactionService {
     @Autowired
     TransactionRepo tr;
+
     @Autowired
     AuthorisationDetails currentUserDetails;
     @Autowired
-    RateLimiter rateLimiter;
+    BucketService bucketService;
+
     @Autowired
-    CurrencyConversion cc;
+    ExchangeRates cc;
 
     /**
      * Initiate Recording the Transaction
@@ -31,13 +36,14 @@ public class TransactionService {
      *     <li>{@code OK with recorded Transaction}, if the transaction was successfully recorded.</li>
      *     <li>{@code TOO_MANY_REQUESTS}, if the transaction recording failed.</li>
      * </ul>
+     * @throws JsonProcessingException
      */
-    public ResponseEntity<Object> RecordSingleTransaction(TransactionDetails newTransactionRecord) {
-        String currentUser = currentUserDetails.getUsernameFromAuthorizationHeader();
-        if (UserLimitExceeded(currentUser)) {
+    public ResponseEntity<Object> recordSingleTransaction(TransactionDetails newTransactionRecord) throws JsonProcessingException {
+        String currentUser = currentUserDetails.getUsername();
+        if (bucketService.UserLimitExceeded(currentUser, RateLimitingBucketStorage.transactionEndpointBucket)) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("API Limit Exceeded. Try Again after a minute");
         }
-        CommitToMongo(newTransactionRecord);
+        commitToMongo(newTransactionRecord);
         return ResponseEntity.ok("Transaction Recorded Successfully\n" + newTransactionRecord.toString());
     }
 
@@ -46,54 +52,27 @@ public class TransactionService {
      * Commit a Single Transaction To MongoDB
      *
      * @param newTransactionRecord
+     * @throws JsonProcessingException
      */
-    private void CommitToMongo(TransactionDetails newTransactionRecord) {
+    private void commitToMongo(TransactionDetails newTransactionRecord) throws JsonProcessingException {
         if (!newTransactionRecord.getCurrencyUsed().equals("USD")) {
-            newTransactionRecord.setTransactionAmount(cc.conversion(newTransactionRecord.getCurrencyUsed(), newTransactionRecord.getTransactionAmount()));
+            newTransactionRecord.setTransactionAmount(convertForeignExchangeRates(newTransactionRecord.getCurrencyUsed(), newTransactionRecord.getTransactionAmount()));
         }
         tr.save(newTransactionRecord);
     }
-
     /**
-     * Retrieve Token Bucket for a User
+     * Commit a Single Transaction To MongoDB
      *
-     * @param userBucket
-     * @return User specific Token Bucket
-     * <ul>
-     * <li>{@code IF USER ALREADY ACCESSED IT BEFORE}, Retrieve User Token Bucket </li>
-     * <li>{@code IF USER ACCESSING FOR FIRST TIME}, Generate User Token Bucket</li>
-     * </ul>
+     * @param currency
+     * @param amount
+     * @return Generate Standard Currency
+     * @throws JsonProcessingException
      */
-    public Bucket GetTokenBucket(String userBucket) {
-        if (RateLimitingBucketStorage.transactionEndpointBucket.containsKey(userBucket)) {
-            return RateLimitingBucketStorage.transactionEndpointBucket.get(userBucket);
-        }
-        return GenerateTokenBucket(userBucket);
-    }
-
-    /**
-     * Generate Token Bucket for a User
-     *
-     * @param userBucket
-     * @return User specific Token Bucket
-     */
-    public Bucket GenerateTokenBucket(String userBucket) {
-        RateLimitingBucketStorage.transactionEndpointBucket.put(userBucket, rateLimiter.resolveBucket(userBucket));
-        return GetTokenBucket(userBucket);
-    }
-
-    /**
-     * Check if User API Limit Exceeded
-     *
-     * @param username
-     * @return <ul>
-     *     <li>{@code true}, if limit exceeded</li>
-     *     <li>{@code false}, if limit not exceeded</li>
-     * </ul>
-     */
-    public Boolean UserLimitExceeded(String username) {
-        Bucket UserBucket = GetTokenBucket(username);
-        return !UserBucket.tryConsume(1);
+    public double convertForeignExchangeRates(String currency, double amount) throws JsonProcessingException {
+        String exchangeRatesJSON = cc.fetchExchangeRatesJSON();
+        HashMap exchangeRatesHashmap = new ObjectMapper().readValue(exchangeRatesJSON, HashMap.class);
+        HashMap map = (HashMap) exchangeRatesHashmap.get("rates");
+        return amount / (double) map.get(currency);
     }
 
 }

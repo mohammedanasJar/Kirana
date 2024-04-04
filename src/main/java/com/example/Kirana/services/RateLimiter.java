@@ -22,7 +22,7 @@ public class RateLimiter {
 
     private static final Logger logger = LoggerFactory.getLogger(Report.class);
 
-    public Bucket resolveBucket(String key) {
+    public Bucket createBucket(String key) {
         UserDetails user = userRepo.findByUsername(key);
         if (user == null) {
             logger.info("User " + key + "does not exist");

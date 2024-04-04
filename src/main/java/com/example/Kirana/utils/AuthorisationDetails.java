@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuthorisationDetails {
 
-    public String getUsernameFromAuthorizationHeader() {
+    public String getUsername() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated()) {

@@ -31,7 +31,7 @@ public class ReportService {
     RateLimiter rateLimiter;
     public ResponseEntity getMonthReport() {
         try {
-            String currentUser = currentUserDetails.getUsernameFromAuthorizationHeader();
+            String currentUser = currentUserDetails.getUsername();
             if (UserLimitExceeded(currentUser)) {
                 return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("API Limit Exceeded. Try Again after a minute");
             }
@@ -57,7 +57,7 @@ public class ReportService {
 
     public ResponseEntity getWeekReport() {
         try {
-            String currentUser = currentUserDetails.getUsernameFromAuthorizationHeader();
+            String currentUser = currentUserDetails.getUsername();
             if (UserLimitExceeded(currentUser)) {
                 return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("API Limit Exceeded. Try Again after a minute");
             }
@@ -83,7 +83,7 @@ public class ReportService {
 
     public ResponseEntity getYearReport() {
         try {
-            String currentUser = currentUserDetails.getUsernameFromAuthorizationHeader();
+            String currentUser = currentUserDetails.getUsername();
             if (UserLimitExceeded(currentUser)) {
                 return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("API Limit Exceeded. Try Again after a minute");
             }
@@ -123,7 +123,7 @@ public class ReportService {
         if(RateLimitingBucketStorage.reportBucket.containsKey(currentUserBucketUsername)){
             return RateLimitingBucketStorage.reportBucket.get(currentUserBucketUsername);
         }
-        RateLimitingBucketStorage.reportBucket.put(currentUserBucketUsername, rateLimiter.resolveBucket(currentUserBucketUsername));
+        RateLimitingBucketStorage.reportBucket.put(currentUserBucketUsername, rateLimiter.createBucket(currentUserBucketUsername));
         return GetUserTokenBucketElseCreate(currentUserBucketUsername);
     }
 

@@ -29,7 +29,7 @@ public class Report {
     @GetMapping("/{period}")
     public ResponseEntity Report(@PathVariable String period) {
         logger.info("Calling " + period + "'s ReportingAPI");
-        String username = ad.getUsernameFromAuthorizationHeader();
+        String username = ad.getUsername();
         if (RateLimitingBucketStorage.reportBucket.containsKey(username)) {
             Bucket mybucket = RateLimitingBucketStorage.reportBucket.get(username);
             if (mybucket.tryConsume(1)) {
@@ -49,7 +49,7 @@ public class Report {
             }
         } else {
             logger.info("Creating a new Bucket for " + username);
-            RateLimitingBucketStorage.reportBucket.put(username, rateLimiter.resolveBucket(username));
+            RateLimitingBucketStorage.reportBucket.put(username, rateLimiter.createBucket(username));
             return this.Report(period);
         }
     }
