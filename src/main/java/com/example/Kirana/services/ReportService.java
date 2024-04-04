@@ -24,7 +24,7 @@ import java.util.Map;
 
 @Slf4j
 @Service
-public class ReportService {
+public class ReportService implements IReportService {
     @Autowired
     TransactionRepo transactionRepo;
     @Autowired
@@ -40,7 +40,7 @@ public class ReportService {
      * @return LocalDate
      */
 
-    public static LocalDate extractDate(String objectIdString) {
+    public  LocalDate extractDate(String objectIdString) {
         ObjectId objectId = new ObjectId(objectIdString);
 
         int timestamp = objectId.getTimestamp();
@@ -57,14 +57,14 @@ public class ReportService {
      * @return {@code ResponseEntity<String>}
      * @throws JsonProcessingException
      */
-    public ResponseEntity<String> getReport(String period) throws JsonProcessingException {
+    public ResponseEntity<String> generateReport(String period) throws JsonProcessingException {
         log.info("Calling " + period + "ly Report");
         String username = currentUserDetails.getUsername();
         if (bucketService.UserLimitExceeded(username, RateLimitingBucketStorage.reportBucket)) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("API Limit Exceeded. Try Again after a minute");
         }
 
-        return ResponseEntity.ok(getProcessedReport(period));
+        return ResponseEntity.ok(processReport(period));
     }
 
     /**
@@ -72,7 +72,7 @@ public class ReportService {
      * @return String
      * @throws JsonProcessingException
      */
-    public String getProcessedReport(String period) throws JsonProcessingException {
+    public String processReport(String period) throws JsonProcessingException {
         List<TransactionDetails> td = transactionRepo.findAll();
         Map<Integer, ReportWrapper> wrManager = new HashMap<>();
         ReportWrapper reportWrapper;
@@ -93,7 +93,7 @@ public class ReportService {
      * @param period
      * @return int
      */
-    private int getTimeFrame(Object dateFromObjectId, String period) {
+    public int getTimeFrame(Object dateFromObjectId, String period) {
         LocalDate date = extractDate(String.valueOf(dateFromObjectId));
         switch (period) {
             case "year":

@@ -25,6 +25,6 @@ public class ReportController {
      */
     @GetMapping("/{period}")
     public ResponseEntity<String> Report(@PathVariable String period) throws JsonProcessingException {
-       return rs.getReport(period);
+       return rs.generateReport(period);
     }
 }
