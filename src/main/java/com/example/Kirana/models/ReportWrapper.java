@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
-public class MyReport {
+public class ReportWrapper {
     @Override
     public String toString() {
         return "{" +
@@ -25,7 +25,7 @@ public class MyReport {
     private Map<String, Double> currencyAmountMap = new HashMap<>();
     private Map<String, Double> typeAmountMap = new HashMap<>();
 
-    public MyReport(int weekNumber, String currency, double Amount, String Type) {
+    public ReportWrapper(int weekNumber, String currency, double Amount, String Type) {
         this.number = weekNumber;
         typeAmountMap.put("Creds", 0.0);
         typeAmountMap.put("Debs", 0.0);

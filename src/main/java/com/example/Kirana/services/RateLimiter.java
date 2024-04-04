@@ -1,6 +1,6 @@
 package com.example.Kirana.services;
 
-import com.example.Kirana.controllers.Report;
+import com.example.Kirana.controllers.ReportController;
 import com.example.Kirana.models.UserDetails;
 import com.example.Kirana.repos.UserRepo;
 import io.github.bucket4j.Bandwidth;
@@ -20,7 +20,7 @@ public class RateLimiter {
     @Autowired
     private UserRepo userRepo;
 
-    private static final Logger logger = LoggerFactory.getLogger(Report.class);
+    private static final Logger logger = LoggerFactory.getLogger(ReportController.class);
 
     public Bucket createBucket(String key) {
         UserDetails user = userRepo.findByUsername(key);

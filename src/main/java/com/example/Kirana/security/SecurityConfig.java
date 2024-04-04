@@ -1,6 +1,6 @@
 package com.example.Kirana.security;
 
-import com.example.Kirana.controllers.Report;
+import com.example.Kirana.controllers.ReportController;
 import com.example.Kirana.models.UserDetails;
 import com.example.Kirana.repos.UserRepo;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    private static final Logger logger = LoggerFactory.getLogger(Report.class);
+    private static final Logger logger = LoggerFactory.getLogger(ReportController.class);
 
     @Autowired
     UserRepo ur;
@@ -35,7 +35,7 @@ public class SecurityConfig {
                         .requestMatchers("/exchange_rates/**").hasAnyAuthority("ADMIN","USER")
                         .requestMatchers("/transaction/generate/**").hasAnyAuthority("ADMIN","USER")
                         .requestMatchers("/transaction/**").hasAnyAuthority("ADMIN")
-                        .requestMatchers("/record/**").hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers("/api/report/**").hasAnyAuthority("ADMIN", "USER")
                             .anyRequest().authenticated()
                 )
                 .httpBasic();

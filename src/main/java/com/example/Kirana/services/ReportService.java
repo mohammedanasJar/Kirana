@@ -1,12 +1,13 @@
 package com.example.Kirana.services;
 
 import com.example.Kirana.constants.RateLimitingBucketStorage;
-import com.example.Kirana.models.MyReport;
+import com.example.Kirana.models.ReportWrapper;
 import com.example.Kirana.models.TransactionDetails;
 import com.example.Kirana.repos.TransactionRepo;
 import com.example.Kirana.utils.AuthorisationDetails;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.bucket4j.Bucket;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,93 +22,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class ReportService {
     @Autowired
-    TransactionRepo tr;
+    TransactionRepo transactionRepo;
     @Autowired
     AuthorisationDetails currentUserDetails;
+
     @Autowired
-    RateLimiter rateLimiter;
-    public ResponseEntity getMonthReport() {
-        try {
-            String currentUser = currentUserDetails.getUsername();
-            if (UserLimitExceeded(currentUser)) {
-                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("API Limit Exceeded. Try Again after a minute");
-            }
-            List<TransactionDetails> td = tr.findAll();
-            int weekNum;
-            Map<Integer, MyReport> wrManager = new HashMap<>();
-            MyReport wr;
-            for (TransactionDetails t : td) {
-                weekNum = getDateFromObjectId(String.valueOf(t.getId())).getMonthValue();
-                if (wrManager.containsKey(weekNum)) {
-                    wr = wrManager.get(weekNum);
-                    wr.mergeData(t.getCurrencyUsed(), t.getTransactionAmount(), t.getTransactionType());
-                } else {
-                    wrManager.put(weekNum, new MyReport(weekNum, t.getCurrencyUsed(), t.getTransactionAmount(), t.getTransactionType()));
-                }
-            }
-            return ResponseEntity.ok(new ObjectMapper().writeValueAsString(wrManager));
-        }
-        catch (Exception e){
-              return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Sorry for the Inconvenience");
-        }
-    }
+    BucketService bucketService;
+    int timeFrame;
 
-    public ResponseEntity getWeekReport() {
-        try {
-            String currentUser = currentUserDetails.getUsername();
-            if (UserLimitExceeded(currentUser)) {
-                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("API Limit Exceeded. Try Again after a minute");
-            }
-            List<TransactionDetails> td = tr.findAll();
-            int weekNum;
-            Map<Integer, MyReport> wrManager = new HashMap<>();
-            MyReport wr;
-            for (TransactionDetails t : td) {
-                weekNum = getDateFromObjectId(String.valueOf(t.getId())).get(WeekFields.ISO.weekOfWeekBasedYear());
-                if (wrManager.containsKey(weekNum)) {
-                    wr = wrManager.get(weekNum);
-                    wr.mergeData(t.getCurrencyUsed(), t.getTransactionAmount(), t.getTransactionType());
-                } else {
-                    wrManager.put(weekNum, new MyReport(weekNum, t.getCurrencyUsed(), t.getTransactionAmount(), t.getTransactionType()));
-                }
-            }
-            return ResponseEntity.ok(new ObjectMapper().writeValueAsString(wrManager));
-        }
-        catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Sorry for the Inconvenience");
-        }
-    }
 
-    public ResponseEntity getYearReport() {
-        try {
-            String currentUser = currentUserDetails.getUsername();
-            if (UserLimitExceeded(currentUser)) {
-                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("API Limit Exceeded. Try Again after a minute");
-            }
-            List<TransactionDetails> td = tr.findAll();
-            int weekNum;
-            Map<Integer, MyReport> wrManager = new HashMap<>();
-            MyReport wr;
-            for (TransactionDetails t : td) {
-                weekNum = getDateFromObjectId(String.valueOf(t.getId())).getYear();
-                if (wrManager.containsKey(weekNum)) {
-                    wr = wrManager.get(weekNum);
-                    wr.mergeData(t.getCurrencyUsed(), t.getTransactionAmount(), t.getTransactionType());
-                } else {
-                    wrManager.put(weekNum, new MyReport(weekNum, t.getCurrencyUsed(), t.getTransactionAmount(), t.getTransactionType()));
-                }
-            }
-            return ResponseEntity.ok(new ObjectMapper().writeValueAsString(wrManager));
-        }
-        catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Sorry for the Inconvenience");
-        }
-    }
+    /**
+     * @param objectIdString
+     * @return LocalDate
+     */
 
-    public static LocalDate getDateFromObjectId(String objectIdString) {
+    public static LocalDate extractDate(String objectIdString) {
         ObjectId objectId = new ObjectId(objectIdString);
 
         int timestamp = objectId.getTimestamp();
@@ -119,16 +52,57 @@ public class ReportService {
                 .toLocalDate();
     }
 
-    public Bucket GetUserTokenBucketElseCreate(String currentUserBucketUsername){
-        if(RateLimitingBucketStorage.reportBucket.containsKey(currentUserBucketUsername)){
-            return RateLimitingBucketStorage.reportBucket.get(currentUserBucketUsername);
+    /**
+     * @param period
+     * @return {@code ResponseEntity<String>}
+     * @throws JsonProcessingException
+     */
+    public ResponseEntity<String> getReport(String period) throws JsonProcessingException {
+        log.info("Calling " + period + "ly Report");
+        String username = currentUserDetails.getUsername();
+        if (bucketService.UserLimitExceeded(username, RateLimitingBucketStorage.reportBucket)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("API Limit Exceeded. Try Again after a minute");
         }
-        RateLimitingBucketStorage.reportBucket.put(currentUserBucketUsername, rateLimiter.createBucket(currentUserBucketUsername));
-        return GetUserTokenBucketElseCreate(currentUserBucketUsername);
+
+        return ResponseEntity.ok(getProcessedReport(period));
     }
 
-    public Boolean UserLimitExceeded (String currentUsername){
-        Bucket UserBucket=GetUserTokenBucketElseCreate(currentUsername);
-        return !UserBucket.tryConsume(1);
+    /**
+     * @param period
+     * @return String
+     * @throws JsonProcessingException
+     */
+    public String getProcessedReport(String period) throws JsonProcessingException {
+        List<TransactionDetails> td = transactionRepo.findAll();
+        Map<Integer, ReportWrapper> wrManager = new HashMap<>();
+        ReportWrapper reportWrapper;
+        for (TransactionDetails transactionDetails : td) {
+            timeFrame = getTimeFrame(transactionDetails.getId(), period);
+            if (wrManager.containsKey(timeFrame)) {
+                reportWrapper = wrManager.get(timeFrame);
+                reportWrapper.mergeData(transactionDetails.getCurrencyUsed(), transactionDetails.getTransactionAmount(), transactionDetails.getTransactionType());
+            } else {
+                wrManager.put(timeFrame, new ReportWrapper(timeFrame, transactionDetails.getCurrencyUsed(), transactionDetails.getTransactionAmount(), transactionDetails.getTransactionType()));
+            }
+        }
+        return new ObjectMapper().writeValueAsString(wrManager);
+    }
+
+    /**
+     * @param dateFromObjectId
+     * @param period
+     * @return int
+     */
+    private int getTimeFrame(Object dateFromObjectId, String period) {
+        LocalDate date = extractDate(String.valueOf(dateFromObjectId));
+        switch (period) {
+            case "year":
+                return date.getYear();
+            case "week":
+                return date.get(WeekFields.ISO.weekOfWeekBasedYear());
+            case "month":
+                return date.getMonthValue();
+        }
+        return getTimeFrame(dateFromObjectId, "year");
     }
 }

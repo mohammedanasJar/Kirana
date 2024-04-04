@@ -4,7 +4,6 @@ import com.example.Kirana.constants.RateLimitingBucketStorage;
 import com.example.Kirana.models.TransactionDetails;
 import com.example.Kirana.repos.TransactionRepo;
 import com.example.Kirana.utils.AuthorisationDetails;
-import com.example.Kirana.utils.ExchangeRates;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +24,9 @@ public class TransactionService {
     BucketService bucketService;
 
     @Autowired
-    ExchangeRates cc;
+    ExchangeRateService cc;
+
+
 
     /**
      * Initiate Recording the Transaction
@@ -69,7 +70,7 @@ public class TransactionService {
      * @throws JsonProcessingException
      */
     public double convertForeignExchangeRates(String currency, double amount) throws JsonProcessingException {
-        String exchangeRatesJSON = cc.fetchExchangeRatesJSON();
+        String exchangeRatesJSON = cc.fetchExchangeRateJSON();
         HashMap exchangeRatesHashmap = new ObjectMapper().readValue(exchangeRatesJSON, HashMap.class);
         HashMap map = (HashMap) exchangeRatesHashmap.get("rates");
         return amount / (double) map.get(currency);
